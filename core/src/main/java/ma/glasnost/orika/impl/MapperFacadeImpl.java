@@ -309,13 +309,10 @@ public class MapperFacadeImpl implements MapperFacade, Reportable {
             final MappingContext context, final MappingStrategy suggestedStrategy) {
         MappingStrategy strategy = suggestedStrategy;
         try {
-            
-            if (context.getMappedObject(sourceObject, destinationType) == null) {
-                if (strategy == null) {
-                    strategy = resolveMappingStrategy(sourceObject, sourceType, destinationType, true, context);
-                }
-                strategy.map(sourceObject, destinationObject, context);
+            if (strategy == null) {
+                strategy = resolveMappingStrategy(sourceObject, sourceType, destinationType, true, context);
             }
+            strategy.map(sourceObject, destinationObject, context);
             
         } catch (MappingException e) {
             throw exceptionUtil.decorate(e);
@@ -367,9 +364,7 @@ public class MapperFacadeImpl implements MapperFacade, Reportable {
             if (strategy == null) {
                 strategy = resolveMappingStrategy(sourceObject, null, destinationObject.getClass(), true, context);
             }
-            if (null == context.getMappedObject(sourceObject, strategy.getBType())) {
-                strategy.map(sourceObject, destinationObject, context);
-            }
+            strategy.map(sourceObject, destinationObject, context);
             
         } catch (MappingException e) {
             /* don't wrap our own exceptions */
@@ -791,9 +786,10 @@ public class MapperFacadeImpl implements MapperFacade, Reportable {
      * @return
      */
     private <S, D> D mapElement(S source, ElementStrategyContext<S, D> context) {
-        if (context.strategy == null || !source.getClass().equals(context.sourceClass)) {
+    	Class<?> sourceClass = getClass(source);
+        if (context.strategy == null || !sourceClass.equals(context.sourceClass)) {
             context.strategy = resolveMappingStrategy(source, context.sourceType, context.destinationType, false, context.mappingContext);
-            context.sourceClass = source.getClass();
+            context.sourceClass = sourceClass;
         } else {
             context.mappingContext.setResolvedSourceType(context.sourceType);
             context.mappingContext.setResolvedDestinationType(context.destinationType);
